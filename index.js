@@ -86,9 +86,9 @@ async function hcsMain(){
  let topicReciept = await topicTransactionId.getReceipt(myClient);
  let topicID = topicReciept.topicId
  let topicIdInString =topicID.toString();
- console.log("topic recipt==",topicReciept)
- console.log("topic id",topicIdInString)   
- 
+ console.log("topic recipt==",topicReciept);
+ console.log("topic id",topicIdInString); 
+ sleep(500);
 
  //subscribe topic 
 
@@ -115,3 +115,7 @@ async function hcsMain(){
  }
 }
 hcsMain()
+
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
