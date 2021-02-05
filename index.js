@@ -1,10 +1,12 @@
 
 require('dotenv').config();
-const { Client,AccountId,PrivateKey, TokenCreateTransaction,TokenAssociateTransaction,TransferTransaction,AccountBalanceQuery} = require('@hashgraph/sdk');
+const { Client,AccountId,PrivateKey, TokenCreateTransaction,TokenAssociateTransaction,TransferTransaction,
+    AccountBalanceQuery,TopicCreateTransaction,TopicMessageSubmitTransaction,TopicMessageQuery} 
+= require('@hashgraph/sdk');
 const {TE} = require('./service/util');
 
 
-async function main(){
+async function mainToken(){
     //credential to access testnet
     const operatorKey = PrivateKey.fromString(process.env.MY_PRIVATE_KEY);
     const opratorId = AccountId.fromString(process.env.MY_ACCOUNT_ID);
@@ -72,4 +74,44 @@ async function main(){
 
 
 }
-main();
+mainToken();
+
+async function hcsMain(){
+    // test net setup
+ const myClient = Client.forTestnet();
+ myClient.setOperator(process.env.MY_ACCOUNT_ID,process.env.MY_PRIVATE_KEY)
+
+ // create a topic 
+ let topicTransactionId = await new TopicCreateTransaction().execute(myClient);
+ let topicReciept = await topicTransactionId.getReceipt(myClient);
+ let topicID = topicReciept.topicId
+ let topicIdInString =topicID.toString();
+ console.log("topic recipt==",topicReciept)
+ console.log("topic id",topicIdInString)   
+ 
+
+ //subscribe topic 
+
+ new TopicMessageQuery()
+ .setTopicId(topicID)
+ .setStartTime(0)
+ .subscribe(
+     myClient,
+    //  (message) => console.log("message recieve",message.contents.toString())
+    (message) => console.log("message recieve",message.contents.toString()),
+    (error)=> console.log("error",error)
+ );
+ 
+ // submit transaction (messege)
+
+ for (let i = 0; i < 10; i++) {
+     let hcsMessage = await new TopicMessageSubmitTransaction()
+     .setTopicId(topicID)
+     .setMessage(`Hi HCS ${i}`)
+     .execute(myClient);
+     let hcsReciept = await hcsMessage.getReceipt(myClient);
+     console.log("hcs Reciept ",hcsReciept);
+     
+ }
+}
+hcsMain()
